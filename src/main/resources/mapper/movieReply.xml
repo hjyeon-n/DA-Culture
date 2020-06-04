@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.MovieReplyMapper">
+
+	<resultMap type="jy.project.review.dto.MovieReplyDto" id="MovieReplyDtoResult">
+		<result column="movieReplyID" property="movieReplyID"/>
+		<result column="movieReviewID" property="movieReviewID"/>
+		<result column="movieReplyContens" property="movieReplyContents"/>
+		<result column="userID" property="userID"/>
+		<result column="movieReplyDate" jdbcType="TIMESTAMP" property="movieReplyDate"/>
+		<result column="movieSecretReply" property="movieSecretReply"/>
+ 		<result column="movieReplyGID" property="movieReplyGID"/>
+		<result column="movieReplyOrder" property="movieReplyOrder"/>
+		<result column="movieReplyParents" property="movieReplyParents"/>
+		<result column="movieReplyLike" property="movieReplyLike"/>
+		<result column="movieReviewWriter" property="movieReviewWriter"/>
+		<result column="movieParentsWriter" property="movieParentsWriter"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.MovieReplyLikeDto" id="MovieReplyLikeDto">
+		<result column="movieReplyID" property="movieReplyID"/>
+		<result column="userID" property="userID"/>
+	</resultMap>
+	
+	<!-- 댓글 리스트 가져오기  -->
+	<select id="getMovieReplyList" resultMap="MovieReplyDtoResult" parameterType="Integer">
+		SELECT *
+		FROM movieReply
+		WHERE movieReviewID = #{movieReviewID}
+		ORDER BY IF(movieReplyParents = 0, movieReplyID, movieReplyParents) ASC
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<!-- 댓글 삽입하기  -->
+	<insert id="insertMovieReply" parameterType="jy.project.review.dto.MovieReplyDto">
+ 		INSERT 
+		INTO movieReply(movieReviewID, movieReplyContents, userID, movieReplyDate, movieSecretReply, movieReplyGID, movieReplyOrder, movieReplyParents, movieReplyLike, movieReviewWriter, movieParentsWriter)
+		VALUES(#{movieReviewID}, #{movieReplyContents}, #{userID}, now(), #{movieSecretReply}, #{movieReplyGID}, #{movieReplyOrder}, #{movieReplyParents}, #{movieReplyLike}, #{movieReviewWriter}, #{movieParentsWriter}) 
+	</insert>
+	
+	<!-- 댓글 수정하기  -->
+	<update id="updateMovieReply" parameterType="jy.project.review.dto.MovieReplyDto">
+		UPDATE movieReply SET
+		movieReplyContents = #{movieReplyContents},
+		movieSecretReply = #{movieSecretReply}
+		WHERE movieReplyID = #{movieReplyID}
+	</update>
+	
+	<!-- 댓글 삭제하기  -->
+	<!-- 부모 댓글을 삭제하면 밑에 답글들도 삭제할 수 있도록 or 처리 -->
+	<delete id="deleteMovieReply" parameterType="Integer">
+		DELETE FROM movieReply
+		WHERE movieReplyID = #{movieReplyID} or movieReplyGID = #{movieReplyID}
+	</delete>
+	
+	<!-- 댓글 삭제 전 좋아요 테이블에서 해당 댓글 삭제 -->
+	<delete id="deleteMovieReply_delete" parameterType="Integer">
+		DELETE FROM movieReplyLike
+		WHERE movieReplyID = #{movieReplyID}
+	</delete>
+	
+	<!-- 답글 수정  -->
+ 	<update id="updateMovieReplyComment">
+		UPDATE movieReply SET
+		movieReplyOrder = movieReplyOrder + 1
+		WHERE movieReplyGID = #{movieReplyGID} and movieReplyOrder = #{movieReplyOrder}
+	</update>
+	
+	<!-- 댓글 상세정보 가져오기  -->
+	<select id="getMovieReply" parameterType="Integer" resultMap="MovieReplyDtoResult">
+		SELECT *
+		FROM movieReply
+		WHERE movieReplyID = #{movieReplyID}
+	</select>
+	
+	<!-- 게시글에 달린 댓글 수   -->
+	<select id="movieReplyCount" parameterType="Integer" resultType="Integer">
+		SELECT COUNT(*)
+		FROM movieReply
+		WHERE movieReviewID = #{movieReviewID}
+	</select>
+	
+	<!-- 답글 순서 정하기  -->
+	<!-- 답글 추가 시 이전에 있던 답글들에 order + 1 하기  -->
+	<update id="setMovieReplyOrder" parameterType="hashMap">
+		UPDATE movieReply
+		SET movieReplyOrder = movieReplyOrder + 1
+		WHERE movieReplyGID = #{movieReplyGID} and movieReplyOrder > #{movieReplyOrder}
+	</update>
+	
+	<!-- 댓글 좋아요 개수  증가  -->
+	<update id="plusMovieReplyLike" parameterType="jy.project.review.dto.MovieReplyLikeDto">
+		UPDATE movieReply
+		SET movieReplyLike = movieReplyLike + 1
+		WHERE movieReplyID = #{movieReplyID}
+	</update>
+	
+	<!-- 댓글 좋아요 개수  감소  -->
+	<update id="minusMovieReplyLike" parameterType="Integer">
+		UPDATE movieReply
+		SET movieReplyLike = movieReplyLike - 1
+		WHERE movieReplyID = #{movieReplyID}
+	</update>
+	
+	<!-- 좋아요 테이블에 댓글과 사용자 ID 삽입 -->
+	<insert id="insertMovieReplyLike" parameterType="jy.project.review.dto.MovieReplyLikeDto">
+		INSERT
+		INTO movieReplyLike(movieReplyID, userID)
+		VALUES(#{movieReplyID}, #{userID})
+	</insert>
+	
+	<!-- 좋아요 테이블에서 댓글과 사용자 ID 삭제 -->
+	<delete id="deleteMovieReplyLike" parameterType="jy.project.review.dto.MovieReplyLikeDto">
+		DELETE
+		FROM movieReplyLike
+		WHERE movieReplyID=#{movieReplyID} and userID=#{userID}
+	</delete>
+	
+	<!-- 좋아요 취소 기능을 위해서 좋아요를 눌렀는지 확인  -->
+	<select id="findMovieReplyLike" resultType="Integer" parameterType="jy.project.review.dto.MovieReplyLikeDto">
+		SELECT COUNT(*)
+		FROM movieReplyLike
+		WHERE movieReplyID=#{movieReplyID} and userID=#{userID}
+	</select> 
+	
+	<!-- 비밀댓글 수정  -->
+	<update id="updateSecretComment" parameterType="jy.project.review.dto.MovieReplyDto">
+		UPDATE movieReply
+		SET movieSecretReply = #{movieSecretReply}
+		WHERE movieReplyID = #{movieReplyID}
+	</update>
+	
+	<!-- 댓글 작성자 찾기  -->
+	<select id="findMovieReplyUser" parameterType="Integer" resultType="String">
+		SELECT userID
+		FROM movieReply
+		WHERE movieReplyID = #{movieReplyID}
+	</select>
+	
+	<!-- 마지막 댓글 ID 찾아오기  -->
+	<!-- 페이징을 위해서 필요  -->
+	<select id="findLastMovieReplyID" resultType="Integer">
+		SELECT movieReplyID
+		FROM movieReply
+		ORDER BY movieReplyID DESC LIMIT 1;
+	</select>
+	
+	<!-- 같은 GID를 가진 댓글 수 찾아오기 -->
+	<select id="countSameGID" resultType="Integer" parameterType="Integer">
+		SELECT COUNT(*)
+		FROM movieReply
+		WHERE movieReplyGID = #{movieReplyID}
+	</select>
+</mapper>

@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.MovieReviewMapper">
+	<resultMap type="jy.project.review.dto.MovieReviewDto" id="MovieDtoResult">
+		<result column="movieReviewID" property="movieReviewID"/>
+		<result column="userID" property="userID"/>
+		<result column="movieReviewTitle" property="movieReviewTitle"/>
+		<result column="movieReviewContens" property="movieReviewContents"/>
+		<result column="movieImage" property="movieImage"/>
+		<result column="movieTitle" property="movieTitle"/>
+		<result column="movieScore" property="movieScore"/>
+		<result column="favoriteWord" property="favoriteWord"/>
+		<result column="movieBoardDate" property="movieBoardDate"/>
+		<result column="movieReviewPreview" property="movieReviewPreview"/>
+		<result column="movieReviewLike" property="movieReviewLike"/>
+		<result column="movieSecretReview" property="movieSecretReview"/>
+		<result column="movieReplyCnt" property="movieReplyCnt"/>
+		<result column="movieReviewViews" property="movieReviewViews"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.MovieReviewLikeDto" id="MovieReviewLikeDto">
+		<result column="movieReviewID" property="movieReviewID"/>
+		<result column="userID" property="userID"/>
+	</resultMap>
+	
+	<!-- 리뷰 가져오기  -->
+	<!-- 검색 기능과 페이지네이션 적용  -->
+	<select id="getAll_movie" resultMap="MovieDtoResult" parameterType="String"> 
+		SELECT *
+		FROM movieBoard
+		<where>
+			movieSecretReview = 0
+			<if test="searchType=='movieTitle' and keyword != null">
+				and movieTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='movieReviewTitle' and keyword != null">
+				and movieReviewTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='movieReviewContents' and keyword != null">
+				and movieReviewContents LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='userID' and keyword != null">
+				and userID LIKE CONCAT('%',#{keyword},'%')
+			</if>
+		</where>
+		ORDER BY movieReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<!-- 페이지네이션을 위해 리뷰 수 가져오기 -->
+	<select id="moviePageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM movieBoard
+		<where>
+			movieSecretReview = 0
+			<if test="searchType=='movieTitle' and keyword != null and keyword != ''">
+				and movieTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='movieReviewTitle' and keyword != null and keyword != ''">
+				and movieReviewTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='movieReviewContents' and keyword != null and keyword != ''">
+				and movieReviewContents LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='userID' and keyword != null and keyword != ''">
+				and userID LIKE CONCAT('%',#{keyword},'%')
+			</if>
+		</where>
+	</select>
+	
+	<!-- 리뷰 작성  -->
+	<insert id="insertMovieReview" parameterType="jy.project.review.dto.MovieReviewDto">
+		INSERT 
+		INTO movieBoard(userID, movieReviewTitle, movieImage, movieReviewContents, movieTitle, movieScore, favoriteWord, movieReviewPreview, movieSecretReview, movieReplyCnt, movieReviewViews, movieBoardDate)
+		VALUES(#{userID}, #{movieReviewTitle}, #{movieImage}, #{movieReviewContents}, #{movieTitle}, #{movieScore}, #{favoriteWord}, #{movieReviewPreview}, #{movieSecretReview}, #{movieReplyCnt}, #{movieReviewViews}, now())
+	</insert>
+	
+	<!-- 리뷰 상세보기  -->
+	<select id="getDetial_movie" parameterType="Integer" resultMap="MovieDtoResult">
+		SELECT *
+		FROM movieBoard
+		WHERE movieReviewID = #{movieReviewID}
+	</select>
+	
+	<!-- 리뷰 수정하기  -->
+	<update id="updateMovieReview" parameterType="jy.project.review.dto.MovieReviewDto">
+		UPDATE movieBoard SET
+		movieReviewTitle = #{movieReviewTitle},
+		movieReviewContents = #{movieReviewContents},
+		movieTitle = #{movieTitle},
+		movieScore = #{movieScore},
+		favoriteWord = #{favoriteWord},
+		movieReviewPreview = #{movieReviewPreview},
+		movieSecretReview = #{movieSecretReview},
+		movieReplyCnt = #{movieReplyCnt},
+		movieReviewViews = #{movieReviewViews},
+		movieBoardDate = now(),
+		movieImage = #{movieImage}
+		WHERE movieReviewID = #{movieReviewID}
+	</update>
+	
+	<!-- 리뷰 삭제하기  -->
+	<delete id="deleteMovieReview" parameterType="Integer">
+		DELETE FROM movieBoard
+		WHERE movieReviewID = #{movieReviewID}
+	</delete>
+	
+	<!-- 좋아요 테이블에서 해당 리뷰 삭제하기  -->
+	<delete id="deleteMovieReviewLike_delete" parameterType="Integer">
+		DELETE FROM movieReviewLike
+		WHERE movieReviewID = #{movieReviewID}
+	</delete>
+	
+	<!-- 글 작성자가 쓴 다른 글들을 볼 수 있음 -->
+	<select id="privateMoviePageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM movieBoard
+		<where>
+			movieSecretReview = 0
+			<choose>
+				<when test="searchType=='movieTitle' and keyword != null">
+					and movieTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='movieReviewTitle' and keyword != null">
+					and movieReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='movieReviewContents' and keyword != null">
+					and movieReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					and userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<!-- 페이지네이션을 위해 작성자의 리뷰 수 가져오기 -->
+	<select id="getAll_privateMovie" resultMap="MovieDtoResult" parameterType="String"> 
+		SELECT *
+		FROM movieBoard
+		<where>
+			movieSecretReview = 0
+			<choose>
+				<when test="searchType=='movieTitle' and keyword != null">
+					and movieTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='movieReviewTitle' and keyword != null">
+					and movieReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='movieReviewContents' and keyword != null">
+					and movieReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					and userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY movieReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<!-- 페이지네이션을 위해 내가 쓴 글 수 가져오기 -->
+	<select id="myMoviePageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM movieBoard
+		<where>
+			<choose>
+				<when test="searchType=='movieTitle' and keyword != null">
+					movieTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='movieReviewTitle' and keyword != null">
+					movieReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='movieReviewContents' and keyword != null">
+					movieReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<!-- 내가 쓴 글 가져오기 -->
+	<select id="getAll_myMovie" resultMap="MovieDtoResult" parameterType="String"> 
+		SELECT *
+		FROM movieBoard
+		<where>
+			<choose>
+				<when test="searchType=='movieTitle' and keyword != null">
+					movieTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='movieReviewTitle' and keyword != null">
+					movieReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='movieReviewContents' and keyword != null">
+					movieReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY movieReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<!-- 좋아요 개수 증가 (게시글에서 확인할 수 있음)  -->
+ 	<update id="plusMovieReviewLike" parameterType="jy.project.review.dto.MovieReviewLikeDto">
+		UPDATE movieBoard
+		SET movieReviewLike = movieReviewLike + 1
+		WHERE movieReviewID = #{movieReviewID}
+	</update>
+	
+	<!-- 좋아요 개수 감소  -->
+	<update id="minusMovieReviewLike" parameterType="Integer">
+		UPDATE movieBoard
+		SET movieReviewLike = movieReviewLike - 1
+		WHERE movieReviewID = #{movieReviewID}
+	</update>
+	
+	<!-- like 테이블에 insert -->
+	<insert id="insertMovieReviewLike" parameterType="jy.project.review.dto.MovieReviewLikeDto">
+		INSERT
+		INTO movieReviewLike(movieReviewID, userID)
+		VALUES(#{movieReviewID}, #{userID})
+	</insert>
+	
+	<!-- like 테이블에서  delete -->
+	<delete id="deleteMovieReviewLike" parameterType="jy.project.review.dto.MovieReviewLikeDto">
+		DELETE
+		FROM movieReviewLike
+		WHERE movieReviewID=#{movieReviewID} and userID=#{userID}
+	</delete>
+	
+	<!-- 좋아요를 안 누른 글에는 좋아요가 활성화되면서 좋아요 개수 늘어나기 / 좋아요를 누른 글에는 좋아요가 비활성화되면서 좋아요 개수 감소하기  -->
+	<select id="findMovieReviewLike" resultType="Integer" parameterType="jy.project.review.dto.MovieReviewLikeDto">
+		SELECT COUNT(*)
+		FROM movieReviewLike
+		WHERE movieReviewID=#{movieReviewID} and userID=#{userID}
+	</select>  
+	
+	<!-- 페이징을 위해 필요 내가 좋아요한 글 개수 불러오기  -->
+	<select id="userLikesMovieCount" resultType="Integer" parameterType="String">
+		SELECT COUNT(*)
+		FROM movieBoard
+		WHERE movieReviewID IN (SELECT movieReviewID
+						FROM movieReviewLike
+						WHERE userID = #{userID})
+	</select>
+	
+	<!-- 내가 좋아요한 글 가져오기  -->
+	<select id="getAll_LikeMovie" resultMap="MovieDtoResult" parameterType="String">
+		SELECT *
+		FROM movieBoard
+		WHERE movieReviewID IN (SELECT movieReviewID
+						FROM movieReviewLike
+						WHERE userID = #{userID})
+	</select>
+	
+	<!-- 댓글을 쓸 때마다 해당 게시글의 댓글 수 증가  -->
+	<update id="plusReplyCnt" parameterType="Integer">
+		UPDATE movieBoard
+		SET movieReplyCnt = movieReplyCnt + 1
+		WHERE movieReviewID = #{movieReviewID}
+	</update>
+	
+	<!-- 댓글을 삭제할 때마다 해당 게시글의 댓글 수 감소  -->
+	<update id="minusReplyCnt" parameterType="Integer">
+		UPDATE movieBoard
+		SET movieReplyCnt = movieReplyCnt - 1
+		WHERE movieReviewID = #{movieReviewID}
+	</update>
+	
+	<!-- 조회 수 증가  -->
+	<update id="movieReviewViews" parameterType="Integer">
+		UPDATE movieBoard
+		SET movieReviewViews = movieReviewViews + 1
+		WHERE movieReviewID = #{movieReviewID}
+	</update>
+	
+	<!-- 글 작성자 가져오기  -->
+	<select id="getMovieReviewWriter" parameterType="Integer" resultType="String">
+		SELECT userID
+		FROM movieBoard
+		WHERE movieReviewID = #{movieReviewID}
+	</select>
+</mapper>

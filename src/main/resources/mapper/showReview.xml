@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.ShowReviewMapper">
+	<resultMap type="jy.project.review.dto.ShowReviewDto" id="ShowDtoResult">
+		<result column="showReviewID" property="showReviewID"/>
+		<result column="userID" property="userID"/>
+		<result column="showReviewTitle" property="showReviewTitle"/>
+		<result column="showReviewContens" property="showReviewContents"/>
+		<result column="showImage" property="showImage"/>
+		<result column="showTitle" property="showTitle"/>
+		<result column="showScore" property="showScore"/>
+		<result column="favoriteWord" property="favoriteWord"/>
+		<result column="showBoardDate" property="showBoardDate"/>
+		<result column="showReviewPreview" property="showReviewPreview"/>
+		<result column="showReviewLike" property="showReviewLike"/>
+		<result column="showSecretReview" property="showSecretReview"/>
+		<result column="showReplyCnt" property="showReplyCnt"/>
+		<result column="showReviewViews" property="showReviewViews"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.ShowReviewLikeDto" id="ShowReviewLikeDto">
+		<result column="showReviewID" property="showReviewID"/>
+		<result column="userID" property="userID"/>
+	</resultMap>
+	
+	<select id="getAll_show" resultMap="ShowDtoResult" parameterType="String"> 
+		SELECT *
+		FROM showBoard
+		<where>
+			showSecretReview = 0
+			<if test="searchType=='showTitle' and keyword != null">
+				and showTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='showReviewTitle' and keyword != null">
+				and showReviewTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='showReviewContents' and keyword != null">
+				and showReviewContents LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='userID' and keyword != null">
+				and userID LIKE CONCAT('%',#{keyword},'%')
+			</if>
+		</where>
+		ORDER BY showReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<select id="showPageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM showBoard
+		<where>
+			showSecretReview = 0
+			<if test="searchType=='showTitle' and keyword != null and keyword != ''">
+				and showTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='showReviewTitle' and keyword != null and keyword != ''">
+				and showReviewTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='showReviewContents' and keyword != null and keyword != ''">
+				and showReviewContents LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='userID' and keyword != null and keyword != ''">
+				and userID LIKE CONCAT('%',#{keyword},'%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertShowReview" parameterType="jy.project.review.dto.ShowReviewDto">
+		INSERT 
+		INTO showBoard(userID, showReviewTitle, showImage, showReviewContents, showTitle, showScore, favoriteWord, showReviewPreview, showSecretReview, showReplyCnt, showReviewViews, showBoardDate)
+		VALUES(#{userID}, #{showReviewTitle}, #{showImage}, #{showReviewContents}, #{showTitle}, #{showScore}, #{favoriteWord}, #{showReviewPreview}, #{showSecretReview}, #{showReplyCnt}, #{showReviewViews}, now())
+	</insert>
+	
+	<select id="getDetial_show" parameterType="Integer" resultMap="ShowDtoResult">
+		SELECT *
+		FROM showBoard
+		WHERE showReviewID = #{showReviewID}
+	</select>
+	
+	<update id="updateShowReview" parameterType="jy.project.review.dto.ShowReviewDto">
+		UPDATE showBoard SET
+		showReviewTitle = #{showReviewTitle},
+		showReviewContents = #{showReviewContents},
+		showTitle = #{showTitle},
+		showScore = #{showScore},
+		favoriteWord = #{favoriteWord},
+		showReviewPreview = #{showReviewPreview},
+		showSecretReview = #{showSecretReview},
+		showReplyCnt = #{showReplyCnt},
+		showReviewViews = #{showReviewViews},
+		showBoardDate = now(),
+		showImage = #{showImage}
+		WHERE showReviewID = #{showReviewID}
+	</update>
+	
+	<delete id="deleteShowReview" parameterType="Integer">
+		DELETE FROM showBoard
+		WHERE showReviewID = #{showReviewID}
+	</delete>
+	
+	<delete id="deleteShowReviewLike_delete" parameterType="Integer">
+		DELETE FROM showReviewLike
+		WHERE showReviewID= #{showReviewID}
+	</delete>
+	
+	<select id="privateShowPageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM showBoard
+		<where>
+			showSecretReview = 0
+			<choose>
+				<when test="searchType=='showTitle' and keyword != null">
+					and showTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='showReviewTitle' and keyword != null">
+					and showReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='showReviewContents' and keyword != null">
+					and showReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					and userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<select id="getAll_privateShow" resultMap="ShowDtoResult" parameterType="String"> 
+		SELECT *
+		FROM showBoard
+		<where>
+			showSecretReview = 0
+			<choose>
+				<when test="searchType=='showTitle' and keyword != null">
+					and showTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='showReviewTitle' and keyword != null">
+					and showReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='showReviewContents' and keyword != null">
+					and showReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					and userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY showReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<select id="myShowPageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM showBoard
+		<where>
+			<choose>
+				<when test="searchType=='showTitle' and keyword != null">
+					showTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='showReviewTitle' and keyword != null">
+					showReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='showReviewContents' and keyword != null">
+					showReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<select id="getAll_myShow" resultMap="ShowDtoResult" parameterType="String"> 
+		SELECT *
+		FROM showBoard
+		<where>
+			<choose>
+				<when test="searchType=='showTitle' and keyword != null">
+					showTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='showReviewTitle' and keyword != null">
+					showReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='showReviewContents' and keyword != null">
+					showReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY showReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+ 	<update id="plusShowReviewLike" parameterType="jy.project.review.dto.ShowReviewLikeDto">
+		UPDATE showBoard
+		SET showReviewLike = showReviewLike + 1
+		WHERE showReviewID = #{showReviewID}
+	</update>
+	
+	<update id="minusShowReviewLike" parameterType="Integer">
+		UPDATE showBoard
+		SET showReviewLike = showReviewLike - 1
+		WHERE showReviewID = #{showReviewID}
+	</update>
+	
+	<insert id="insertShowReviewLike" parameterType="jy.project.review.dto.ShowReviewLikeDto">
+		INSERT
+		INTO showReviewLike(showReviewID, userID)
+		VALUES(#{showReviewID}, #{userID})
+	</insert>
+	
+	<delete id="deleteShowReviewLike" parameterType="jy.project.review.dto.ShowReviewLikeDto">
+		DELETE
+		FROM showReviewLike
+		WHERE showReviewID=#{showReviewID} and userID=#{userID}
+	</delete>
+	
+	<select id="findShowReviewLike" resultType="Integer" parameterType="jy.project.review.dto.ShowReviewLikeDto">
+		SELECT COUNT(*)
+		FROM showReviewLike
+		WHERE showReviewID=#{showReviewID} and userID=#{userID}
+	</select>  
+	
+	<select id="userLikesShowCount" resultType="Integer" parameterType="String">
+		SELECT COUNT(*)
+		FROM showBoard
+		WHERE showReviewID IN (SELECT showReviewID
+						FROM showReviewLike
+						WHERE userID = #{userID})
+	</select>
+	
+	<select id="getAll_LikeShow" resultMap="ShowDtoResult" parameterType="String">
+		SELECT *
+		FROM showBoard
+		WHERE showReviewID IN (SELECT showReviewID
+						FROM showReviewLike
+						WHERE userID = #{userID})
+	</select>
+	
+	<update id="plusReplyCnt" parameterType="Integer">
+		UPDATE showBoard
+		SET showReplyCnt = showReplyCnt + 1
+		WHERE showReviewID = #{showReviewID}
+	</update>
+	
+	<update id="minusReplyCnt" parameterType="Integer">
+		UPDATE showBoard
+		SET showReplyCnt = showReplyCnt - 1
+		WHERE showReviewID = #{showReviewID}
+	</update>
+	
+	<update id="showReviewViews" parameterType="Integer">
+		UPDATE showBoard
+		SET showReviewViews = showReviewViews + 1
+		WHERE showReviewID = #{showReviewID}
+	</update>
+	
+	<select id="getShowReviewWriter" resultType="String" parameterType="Integer">
+		SELECT userID
+		FROM showBoard
+		WHERE showReviewID = #{showReviewID}
+	</select>
+</mapper>

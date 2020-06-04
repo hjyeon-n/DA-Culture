@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.BookReviewMapper">
+	<resultMap type="jy.project.review.dto.BookReviewDto" id="BookDtoResult">
+		<result column="bookReviewID" property="bookReviewID"/>
+		<result column="userID" property="userID"/>
+		<result column="bookReviewTitle" property="bookReviewTitle"/>
+		<result column="bookReviewContens" property="bookReviewContents"/>
+		<result column="bookImage" property="bookImage"/>
+		<result column="bookTitle" property="bookTitle"/>
+		<result column="bookScore" property="bookScore"/>
+		<result column="favoriteWord" property="favoriteWord"/>
+		<result column="bookBoardDate" property="bookBoardDate"/>
+		<result column="bookReviewPreview" property="bookReviewPreview"/>
+		<result column="bookReviewLike" property="bookReviewLike"/>
+		<result column="bookSecretReview" property="bookSecretReview"/>
+		<result column="bookReplyCnt" property="bookReplyCnt"/>
+		<result column="bookReviewViews" property="bookReviewViews"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.BookReviewLikeDto" id="BookReviewLikeDto">
+		<result column="bookReviewID" property="bookReviewID"/>
+		<result column="userID" property="userID"/>
+	</resultMap>
+	
+	<select id="getAll_book" resultMap="BookDtoResult" parameterType="String"> 
+		SELECT *
+		FROM bookBoard
+		<where>
+			bookSecretReview = 0
+			<if test="searchType=='bookTitle' and keyword != null">
+				and bookTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='bookReviewTitle' and keyword != null">
+				and bookReviewTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='bookReviewContents' and keyword != null">
+				and bookReviewContents LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='userID' and keyword != null">
+				and userID LIKE CONCAT('%',#{keyword},'%')
+			</if>
+		</where>
+		ORDER BY bookReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<select id="bookPageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM bookBoard
+		<where>
+			bookSecretReview = 0
+			<if test="searchType=='bookTitle' and keyword != null and keyword != ''">
+				and bookTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='bookReviewTitle' and keyword != null and keyword != ''">
+				and bookReviewTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='bookReviewContents' and keyword != null and keyword != ''">
+				and bookReviewContents LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='userID' and keyword != null and keyword != ''">
+				and userID LIKE CONCAT('%',#{keyword},'%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertBookReview" parameterType="jy.project.review.dto.BookReviewDto">
+		INSERT 
+		INTO bookBoard(userID, bookReviewTitle, bookReviewContents, bookTitle, bookScore, favoriteWord, bookReviewPreview, bookSecretReview, bookReplyCnt, bookReviewViews, bookBoardDate)
+		VALUES(#{userID}, #{bookReviewTitle}, #{bookReviewContents}, #{bookTitle}, #{bookScore}, #{favoriteWord}, #{bookReviewPreview}, #{bookSecretReview}, #{bookReplyCnt}, #{bookReviewViews}, now())
+	</insert>
+	
+	<select id="getDetial_book" parameterType="Integer" resultMap="BookDtoResult">
+		SELECT *
+		FROM bookBoard
+		WHERE bookReviewID = #{bookReviewID}
+	</select>
+	
+	<update id="updateBookReview" parameterType="jy.project.review.dto.BookReviewDto">
+		UPDATE bookBoard SET
+		bookReviewTitle = #{bookReviewTitle},
+		bookReviewContents = #{bookReviewContents},
+		bookTitle = #{bookTitle},
+		bookScore = #{bookScore},
+		favoriteWord = #{favoriteWord},
+		bookReviewPreview = #{bookReviewPreview},
+		bookSecretReview = #{bookSecretReview},
+		bookReplyCnt = #{bookReplyCnt},
+		bookReviewViews = #{bookReviewViews},
+		bookBoardDate = now(),
+		bookImage = #{bookImage}
+		WHERE bookReviewID = #{bookReviewID}
+	</update>
+	
+	<delete id="deleteBookReview" parameterType="Integer">
+		DELETE FROM bookBoard
+		WHERE bookReviewID = #{bookReviewID}
+	</delete>
+	
+	<delete id="deleteBookReviewLike_delete" parameterType="Integer">
+		DELETE FROM bookReviewLike
+		WHERE bookReviewID= #{bookReviewID}
+	</delete>
+	
+	<select id="privateBookPageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM bookBoard
+		<where>
+			bookSecretReview = 0
+			<choose>
+				<when test="searchType=='bookTitle' and keyword != null">
+					and bookTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='bookReviewTitle' and keyword != null">
+					and bookReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='bookReviewContents' and keyword != null">
+					and bookReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					and userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<select id="getAll_privateBook" resultMap="BookDtoResult" parameterType="String"> 
+		SELECT *
+		FROM bookBoard
+		<where>
+			bookSecretReview = 0
+			<choose>
+				<when test="searchType=='bookTitle' and keyword != null">
+					and bookTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='bookReviewTitle' and keyword != null">
+					and bookReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='bookReviewContents' and keyword != null">
+					and bookReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					and userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY bookReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<select id="myBookPageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM bookBoard
+		<where>
+			<choose>
+				<when test="searchType=='bookTitle' and keyword != null">
+					bookTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='bookReviewTitle' and keyword != null">
+					bookReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='bookReviewContents' and keyword != null">
+					bookReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<select id="getAll_myBook" resultMap="BookDtoResult" parameterType="String"> 
+		SELECT *
+		FROM bookBoard
+		<where>
+			<choose>
+				<when test="searchType=='bookTitle' and keyword != null">
+					bookTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='bookReviewTitle' and keyword != null">
+					bookReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='bookReviewContents' and keyword != null">
+					bookReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY bookReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+ 	<update id="plusBookReviewLike" parameterType="jy.project.review.dto.BookReviewLikeDto">
+		UPDATE bookBoard
+		SET bookReviewLike = bookReviewLike + 1
+		WHERE bookReviewID = #{bookReviewID}
+	</update>
+	
+	<update id="minusBookReviewLike" parameterType="Integer">
+		UPDATE bookBoard
+		SET bookReviewLike = bookReviewLike - 1
+		WHERE bookReviewID = #{bookReviewID}
+	</update>
+	
+	<insert id="insertBookReviewLike" parameterType="jy.project.review.dto.BookReviewLikeDto">
+		INSERT
+		INTO bookReviewLike(bookReviewID, userID)
+		VALUES(#{bookReviewID}, #{userID})
+	</insert>
+	
+	<delete id="deleteBookReviewLike" parameterType="jy.project.review.dto.BookReviewLikeDto">
+		DELETE
+		FROM bookReviewLike
+		WHERE bookReviewID=#{bookReviewID} and userID=#{userID}
+	</delete>
+	
+	<select id="findBookReviewLike" resultType="Integer" parameterType="jy.project.review.dto.BookReviewLikeDto">
+		SELECT COUNT(*)
+		FROM bookReviewLike
+		WHERE bookReviewID=#{bookReviewID} and userID=#{userID}
+	</select>  
+	
+	<select id="userLikesBookCount" resultType="Integer" parameterType="String">
+		SELECT COUNT(*)
+		FROM bookBoard
+		WHERE bookReviewID IN (SELECT bookReviewID
+						FROM bookReviewLike
+						WHERE userID = #{userID})
+	</select>
+	
+	<select id="getAll_LikeBook" resultMap="BookDtoResult" parameterType="String">
+		SELECT *
+		FROM bookBoard
+		WHERE bookReviewID IN (SELECT bookReviewID
+						FROM bookReviewLike
+						WHERE userID = #{userID})
+	</select>
+	
+	<update id="plusReplyCnt" parameterType="Integer">
+		UPDATE bookBoard
+		SET bookReplyCnt = bookReplyCnt + 1
+		WHERE bookReviewID = #{bookReviewID}
+	</update>
+	
+	<update id="minusReplyCnt" parameterType="Integer">
+		UPDATE bookBoard
+		SET bookReplyCnt = bookReplyCnt - 1
+		WHERE bookReviewID = #{bookReviewID}
+	</update>
+	
+	<update id="bookReviewViews" parameterType="Integer">
+		UPDATE bookBoard
+		SET bookReviewViews = bookReviewViews + 1
+		WHERE bookReviewID = #{bookReviewID}
+	</update>
+	
+	<select id="getBookReviewWriter" parameterType="Integer" resultType="String">
+		SELECT userID
+		FROM bookBoard
+		WHERE bookReviewID = #{bookReviewID}
+	</select>
+</mapper>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.SchedulerMapper">
+	<resultMap type="jy.project.review.dto.MovieReviewDto" id="MovieDtoResult">
+		<result column="movieReviewID" property="movieReviewID"/>
+		<result column="userID" property="userID"/>
+		<result column="movieReviewTitle" property="movieReviewTitle"/>
+		<result column="movieTitle" property="movieTitle"/>
+		<result column="movieScore" property="movieScore"/>
+		<result column="movieBoardDate" property="movieBoardDate"/>
+		<result column="movieReviewLike" property="movieReviewLike"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.BookReviewDto" id="BookDtoResult">
+		<result column="bookReviewID" property="bookReviewID"/>
+		<result column="userID" property="userID"/>
+		<result column="bookReviewTitle" property="bookReviewTitle"/>
+		<result column="bookTitle" property="bookTitle"/>
+		<result column="bookScore" property="bookScore"/>
+		<result column="bookBoardDate" property="bookBoardDate"/>
+		<result column="bookReviewLike" property="bookReviewLike"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.PlayReviewDto" id="PlayDtoResult">
+		<result column="playReviewID" property="playReviewID"/>
+		<result column="userID" property="userID"/>
+		<result column="playReviewTitle" property="playReviewTitle"/>
+		<result column="playTitle" property="playTitle"/>
+		<result column="playScore" property="playScore"/>
+		<result column="playBoardDate" property="playBoardDate"/>
+		<result column="playReviewLike" property="playReviewLike"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.ShowReviewDto" id="ShowDtoResult">
+		<result column="showReviewID" property="showReviewID"/>
+		<result column="userID" property="userID"/>
+		<result column="showReviewTitle" property="showReviewTitle"/>
+		<result column="showTitle" property="showTitle"/>
+		<result column="showScore" property="showScore"/>
+		<result column="showBoardDate" property="showBoardDate"/>
+		<result column="showReviewLike" property="showReviewLike"/>
+		<result column="showReviewViews" property="showReviewViews"/>
+	</resultMap>
+	
+	<select id="get_bestMovieReview" resultMap="MovieDtoResult" parameterType="String"> 
+		SELECT *
+		FROM movieBoard
+		WHERE movieReviewLike = (SELECT MAX(movieReviewLike) FROM movieBoard WHERE movieBoardDate > DATE_SUB(#{date}, INTERVAL 1 WEEK))
+		AND movieBoardDate > DATE_SUB(#{date}, INTERVAL 1 WEEK)
+		LIMIT 5
+	</select>
+	
+	<select id="get_bestBookReview" resultMap="BookDtoResult" parameterType="String"> 
+		SELECT *
+		FROM bookBoard
+		WHERE bookReviewLike = (SELECT MAX(bookReviewLike) FROM bookBoard WHERE bookBoardDate > DATE_SUB(#{date}, INTERVAL 1 WEEK))
+		AND bookBoardDate > DATE_SUB(#{date}, INTERVAL 1 WEEK)
+		LIMIT 5
+	</select>
+	
+	<select id="get_bestShowReview" resultMap="ShowDtoResult" parameterType="String"> 
+		SELECT *
+		FROM showBoard
+		WHERE showReviewLike = (SELECT MAX(showReviewLike) FROM showBoard WHERE showBoardDate > DATE_SUB(#{date}, INTERVAL 1 WEEK))
+		AND showBoardDate > DATE_SUB(#{date}, INTERVAL 1 WEEK)
+		LIMIT 5
+	</select>
+	
+	<select id="get_bestPlayReview" resultMap="PlayDtoResult" parameterType="String"> 
+		SELECT *
+		FROM playBoard
+		WHERE playReviewLike = (SELECT MAX(playReviewLike) FROM playBoard WHERE playBoardDate > DATE_SUB(#{date}, INTERVAL 1 WEEK))
+		AND playBoardDate > DATE_SUB(#{date}, INTERVAL 1 WEEK)
+		LIMIT 5
+	</select>
+	
+</mapper>

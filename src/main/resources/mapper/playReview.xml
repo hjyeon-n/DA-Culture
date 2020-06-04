@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.PlayReviewMapper">
+	<resultMap type="jy.project.review.dto.PlayReviewDto" id="PlayDtoResult">
+		<result column="playReviewID" property="playReviewID"/>
+		<result column="userID" property="userID"/>
+		<result column="playReviewTitle" property="playReviewTitle"/>
+		<result column="playReviewContens" property="playReviewContents"/>
+		<result column="playImage" property="playImage"/>
+		<result column="playTitle" property="playTitle"/>
+		<result column="playScore" property="playScore"/>
+		<result column="favoriteWord" property="favoriteWord"/>
+		<result column="playBoardDate" property="playBoardDate"/>
+		<result column="playReviewPreview" property="playReviewPreview"/>
+		<result column="playReviewLike" property="playReviewLike"/>
+		<result column="playSecretReview" property="playSecretReview"/>
+		<result column="playReplyCnt" property="playReplyCnt"/>
+		<result column="playReviewViews" property="playReviewViews"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.PlayReviewLikeDto" id="PlayReviewLikeDto">
+		<result column="playReviewID" property="playReviewID"/>
+		<result column="userID" property="userID"/>
+	</resultMap>
+	
+	<select id="getAll_play" resultMap="PlayDtoResult" parameterType="String"> 
+		SELECT *
+		FROM playBoard
+		<where>
+			playSecretReview = 0
+			<if test="searchType=='playTitle' and keyword != null">
+				and playTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='playReviewTitle' and keyword != null">
+				and playReviewTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='playReviewContents' and keyword != null">
+				and playReviewContents LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='userID' and keyword != null">
+				and userID LIKE CONCAT('%',#{keyword},'%')
+			</if>
+		</where>
+		ORDER BY playReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<select id="playPageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM playBoard
+		<where>
+			playSecretReview = 0
+			<if test="searchType=='playTitle' and keyword != null and keyword != ''">
+				and playTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='playReviewTitle' and keyword != null and keyword != ''">
+				and playReviewTitle LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='playReviewContents' and keyword != null and keyword != ''">
+				and playReviewContents LIKE CONCAT('%',#{keyword},'%')
+			</if>
+			<if test="searchType=='userID' and keyword != null and keyword != ''">
+				and userID LIKE CONCAT('%',#{keyword},'%')
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insertPlayReview" parameterType="jy.project.review.dto.PlayReviewDto">
+		INSERT 
+		INTO playBoard(userID, playReviewTitle, playImage, playReviewContents, playTitle, playScore, favoriteWord, playReviewPreview, playSecretReview, playReplyCnt, playReviewViews, playBoardDate)
+		VALUES(#{userID}, #{playReviewTitle}, #{playImage}, #{playReviewContents}, #{playTitle}, #{playScore}, #{favoriteWord}, #{playReviewPreview}, #{playSecretReview}, #{playReplyCnt}, #{playReviewViews}, now())
+	</insert>
+	
+	<select id="getDetial_play" parameterType="Integer" resultMap="PlayDtoResult">
+		SELECT *
+		FROM playBoard
+		WHERE playReviewID = #{playReviewID}
+	</select>
+	
+	<update id="updatePlayReview" parameterType="jy.project.review.dto.PlayReviewDto">
+		UPDATE playBoard SET
+		playReviewTitle = #{playReviewTitle},
+		playReviewContents = #{playReviewContents},
+		playTitle = #{playTitle},
+		playScore = #{playScore},
+		favoriteWord = #{favoriteWord},
+		playReviewPreview = #{playReviewPreview},
+		playSecretReview = #{playSecretReview},
+		playReplyCnt = #{playReplyCnt},
+		playReviewViews = #{playReviewViews},
+		playBoardDate = now(),
+		playImage = #{playImage}
+		WHERE playReviewID = #{playReviewID}
+	</update>
+	
+	<delete id="deletePlayReview" parameterType="Integer">
+		DELETE FROM playBoard
+		WHERE playReviewID = #{playReviewID}
+	</delete>
+	
+	<delete id="deletePlayReviewLike_delete" parameterType="Integer">
+		DELETE FROM playReviewLike
+		WHERE playReviewID= #{playReviewID}
+	</delete>
+	
+	<select id="privatePlayPageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM playBoard
+		<where>
+			playSecretReview = 0
+			<choose>
+				<when test="searchType=='playTitle' and keyword != null">
+					and playTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='playReviewTitle' and keyword != null">
+					and playReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='playReviewContents' and keyword != null">
+					and playReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					and userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<select id="getAll_privatePlay" resultMap="PlayDtoResult" parameterType="String"> 
+		SELECT *
+		FROM playBoard
+		<where>
+			playSecretReview = 0
+			<choose>
+				<when test="searchType=='playTitle' and keyword != null">
+					and playTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='playReviewTitle' and keyword != null">
+					and playReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='playReviewContents' and keyword != null">
+					and playReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					and userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY playReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<select id="myPlayPageCount" resultType="Integer" parameterType="HashMap">
+		SELECT COUNT(*)
+		FROM playBoard
+		<where>
+			<choose>
+				<when test="searchType=='playTitle' and keyword != null">
+					playTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='playReviewTitle' and keyword != null">
+					playReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='playReviewContents' and keyword != null">
+					playReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+	</select>
+	
+	<select id="getAll_myPlay" resultMap="PlayDtoResult" parameterType="String"> 
+		SELECT *
+		FROM playBoard
+		<where>
+			<choose>
+				<when test="searchType=='playTitle' and keyword != null">
+					playTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='playReviewTitle' and keyword != null">
+					playReviewTitle LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<when test="searchType=='playReviewContents' and keyword != null">
+					playReviewContents LIKE CONCAT('%',#{keyword},'%') and userID=#{userID}
+				</when>
+				<otherwise>
+					userID = #{userID}
+				</otherwise>
+			</choose>
+		</where>
+		ORDER BY playReviewID
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+ 	<update id="plusPlayReviewLike" parameterType="jy.project.review.dto.PlayReviewLikeDto">
+		UPDATE playBoard
+		SET playReviewLike = playReviewLike + 1
+		WHERE playReviewID = #{playReviewID}
+	</update>
+	
+	<update id="minusPlayReviewLike" parameterType="Integer">
+		UPDATE playBoard
+		SET playReviewLike = playReviewLike - 1
+		WHERE playReviewID = #{playReviewID}
+	</update>
+	
+	<insert id="insertPlayReviewLike" parameterType="jy.project.review.dto.PlayReviewLikeDto">
+		INSERT
+		INTO playReviewLike(playReviewID, userID)
+		VALUES(#{playReviewID}, #{userID})
+	</insert>
+	
+	<delete id="deletePlayReviewLike" parameterType="jy.project.review.dto.PlayReviewLikeDto">
+		DELETE
+		FROM playReviewLike
+		WHERE playReviewID=#{playReviewID} and userID=#{userID}
+	</delete>
+	
+	<select id="findPlayReviewLike" resultType="Integer" parameterType="jy.project.review.dto.PlayReviewLikeDto">
+		SELECT COUNT(*)
+		FROM playReviewLike
+		WHERE playReviewID=#{playReviewID} and userID=#{userID}
+	</select>  
+	
+	<select id="userLikesPlayCount" resultType="Integer" parameterType="String">
+		SELECT COUNT(*)
+		FROM playBoard
+		WHERE playReviewID IN (SELECT playReviewID
+						FROM playReviewLike
+						WHERE userID = #{userID})
+	</select>
+	
+	<select id="getAll_LikePlay" resultMap="PlayDtoResult" parameterType="String">
+		SELECT *
+		FROM playBoard
+		WHERE playReviewID IN (SELECT playReviewID
+						FROM playReviewLike
+						WHERE userID = #{userID})
+	</select>
+	
+	<update id="plusReplyCnt" parameterType="Integer">
+		UPDATE playBoard
+		SET playReplyCnt = playReplyCnt + 1
+		WHERE playReviewID = #{playReviewID}
+	</update>
+	
+	<update id="minusReplyCnt" parameterType="Integer">
+		UPDATE playBoard
+		SET playReplyCnt = playReplyCnt - 1
+		WHERE playReviewID = #{playReviewID}
+	</update>
+	
+	<update id="playReviewViews" parameterType="Integer">
+		UPDATE playBoard
+		SET playReviewViews = playReviewViews + 1
+		WHERE playReviewID = #{playReviewID}
+	</update>
+	
+	<select id="getPlayReviewWriter" parameterType="Integer" resultType="String">
+		SELECT userID
+		FROM playBoard
+		WHERE playReviewID = #{playReviewID}
+	</select>
+</mapper>

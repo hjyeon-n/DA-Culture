@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.PlayReplyMapper">
+
+	<resultMap type="jy.project.review.dto.PlayReplyDto" id="PlayReplyDtoResult">
+		<result column="playReplyID" property="playReplyID"/>
+		<result column="playReviewID" property="playReviewID"/>
+		<result column="playReplyContens" property="playReplyContents"/>
+		<result column="userID" property="userID"/>
+		<result column="playReplyDate" jdbcType="TIMESTAMP" property="playReplyDate"/>
+		<result column="playSecretReply" property="playSecretReply"/>
+ 		<result column="playReplyGID" property="playReplyGID"/>
+		<result column="playReplyOrder" property="playReplyOrder"/>
+		<result column="playReplyParents" property="playReplyParents"/>
+		<result column="playReplyLike" property="playReplyLike"/>
+		<result column="playReviewWriter" property="playReviewWriter"/>
+		<result column="playParentsWriter" property="playParentsWriter"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.PlayReplyLikeDto" id="PlayReplyLikeDto">
+		<result column="playReplyID" property="playReplyID"/>
+		<result column="userID" property="userID"/>
+	</resultMap>
+	
+	<select id="getPlayReplyList" resultMap="PlayReplyDtoResult" parameterType="Integer">
+		SELECT *
+		FROM playReply
+		WHERE playReviewID = #{playReviewID}
+		ORDER BY IF(playReplyParents = 0, playReplyID, playReplyParents) ASC
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<insert id="insertPlayReply" parameterType="jy.project.review.dto.PlayReplyDto">
+ 		INSERT 
+		INTO playReply(playReviewID, playReplyContents, userID, playReplyDate, playSecretReply, playReplyGID, playReplyOrder, playReplyParents, playReplyLike, playReviewWriter, playParentsWriter)
+		VALUES(#{playReviewID}, #{playReplyContents}, #{userID}, now(), #{playSecretReply}, #{playReplyGID}, #{playReplyOrder}, #{playReplyParents}, #{playReplyLike}, #{playReviewWriter}, #{playParentsWriter}) 
+	</insert>
+	
+	<update id="updatePlayReply" parameterType="jy.project.review.dto.PlayReplyDto">
+		UPDATE playReply SET
+		playReplyContents = #{playReplyContents},
+		playSecretReply = #{playSecretReply}
+		WHERE playReplyID = #{playReplyID}
+	</update>
+	
+	<delete id="deletePlayReply" parameterType="Integer">
+		DELETE FROM playReply
+		WHERE playReplyID = #{playReplyID} or playReplyGID = #{playReplyID}
+	</delete>
+	
+	<delete id="deletePlayReply_delete" parameterType="Integer">
+		DELETE FROM playReplyLike
+		WHERE playReplyID = #{playReplyID}
+	</delete>
+	
+ 	<update id="updatePlayReplyComment">
+		UPDATE playReply SET
+		playReplyOrder = playReplyOrder + 1
+		WHERE playReplyGID = #{playReplyGID} and playReplyOrder = #{playReplyOrder}
+	</update>
+	
+	<select id="getPlayReply" parameterType="Integer" resultMap="PlayReplyDtoResult">
+		SELECT *
+		FROM playReply
+		WHERE playReplyID = #{playReplyID}
+	</select>
+	
+	<select id="playReplyCount" parameterType="Integer" resultType="Integer">
+		SELECT COUNT(*)
+		FROM playReply
+		WHERE playReviewID = #{playReviewID}
+	</select>
+	
+	<update id="setPlayReplyOrder" parameterType="hashMap">
+		UPDATE playReply
+		SET playReplyOrder = playReplyOrder + 1
+		WHERE playReplyGID = #{playReplyGID} and playReplyOrder > #{playReplyOrder}
+	</update>
+	
+	<update id="plusPlayReplyLike" parameterType="jy.project.review.dto.PlayReplyLikeDto">
+		UPDATE playReply
+		SET playReplyLike = playReplyLike + 1
+		WHERE playReplyID = #{playReplyID}
+	</update>
+	
+	<update id="minusPlayReplyLike" parameterType="Integer">
+		UPDATE playReply
+		SET playReplyLike = playReplyLike - 1
+		WHERE playReplyID = #{playReplyID}
+	</update>
+	
+	<insert id="insertPlayReplyLike" parameterType="jy.project.review.dto.PlayReplyLikeDto">
+		INSERT
+		INTO playReplyLike(playReplyID, userID)
+		VALUES(#{playReplyID}, #{userID})
+	</insert>
+	
+	<delete id="deletePlayReplyLike" parameterType="jy.project.review.dto.PlayReplyLikeDto">
+		DELETE
+		FROM playReplyLike
+		WHERE playReplyID=#{playReplyID} and userID=#{userID}
+	</delete>
+	
+	<select id="findPlayReplyLike" resultType="Integer" parameterType="jy.project.review.dto.PlayReplyLikeDto">
+		SELECT COUNT(*)
+		FROM playReplyLike
+		WHERE playReplyID=#{playReplyID} and userID=#{userID}
+	</select> 
+	
+	<update id="updateSecretComment" parameterType="jy.project.review.dto.PlayReplyDto">
+		UPDATE playReply
+		SET playSecretReply = #{playSecretReply}
+		WHERE playReplyID = #{playReplyID}
+	</update>
+	
+	<select id="findPlayReplyUser" parameterType="Integer" resultType="String">
+		SELECT userID
+		FROM playReply
+		WHERE playReplyID = #{playReplyID}
+	</select>
+	
+	<select id="findLastPlayReplyID" resultType="Integer">
+		SELECT playReplyID
+		FROM playReply
+		ORDER BY playReplyID DESC LIMIT 1;
+	</select>
+	
+	<select id="countSameGID" resultType="Integer" parameterType="Integer">
+		SELECT COUNT(*)
+		FROM playReply
+		WHERE playReplyGID = #{playReplyID}
+	</select>
+</mapper>

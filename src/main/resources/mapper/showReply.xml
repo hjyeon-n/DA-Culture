@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.ShowReplyMapper">
+
+	<resultMap type="jy.project.review.dto.ShowReplyDto" id="ShowReplyDtoResult">
+		<result column="showReplyID" property="showReplyID"/>
+		<result column="showReviewID" property="showReviewID"/>
+		<result column="showReplyContens" property="showReplyContents"/>
+		<result column="userID" property="userID"/>
+		<result column="showReplyDate" jdbcType="TIMESTAMP" property="showReplyDate"/>
+		<result column="showSecretReply" property="showSecretReply"/>
+ 		<result column="showReplyGID" property="showReplyGID"/>
+		<result column="showReplyOrder" property="showReplyOrder"/>
+		<result column="showReplyParents" property="showReplyParents"/>
+		<result column="showReplyLike" property="showReplyLike"/>
+		<result column="showReviewWriter" property="showReviewWriter"/>
+		<result column="showParentsWriter" property="showParentsWriter"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.ShowReplyLikeDto" id="ShowReplyLikeDto">
+		<result column="showReplyID" property="showReplyID"/>
+		<result column="userID" property="userID"/>
+	</resultMap>
+	
+	<select id="getShowReplyList" resultMap="ShowReplyDtoResult" parameterType="Integer">
+		SELECT *
+		FROM showReply
+		WHERE showReviewID = #{showReviewID}
+		ORDER BY IF(showReplyParents = 0, showReplyID, showReplyParents) ASC
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<insert id="insertShowReply" parameterType="jy.project.review.dto.ShowReplyDto">
+ 		INSERT 
+		INTO showReply(showReviewID, showReplyContents, userID, showReplyDate, showSecretReply, showReplyGID, showReplyOrder, showReplyParents, showReplyLike, showReviewWriter, showParentsWriter)
+		VALUES(#{showReviewID}, #{showReplyContents}, #{userID}, now(), #{showSecretReply}, #{showReplyGID}, #{showReplyOrder}, #{showReplyParents}, #{showReplyLike}, #{showReviewWriter}, #{showParentsWriter}) 
+	</insert>
+	
+	<update id="updateShowReply" parameterType="jy.project.review.dto.ShowReplyDto">
+		UPDATE showReply SET
+		showReplyContents = #{showReplyContents},
+		showSecretReply = #{showSecretReply}
+		WHERE showReplyID = #{showReplyID}
+	</update>
+	
+	<delete id="deleteShowReply" parameterType="Integer">
+		DELETE FROM showReply
+		WHERE showReplyID = #{showReplyID} or showReplyGID = #{showReplyID}
+	</delete>
+	
+	<delete id="deleteShowReply_delete" parameterType="Integer">
+		DELETE FROM showReplyLike
+		WHERE showReplyID = #{showReplyID}
+	</delete>
+	
+	
+ 	<update id="updateShowReplyComment">
+		UPDATE showReply SET
+		showReplyOrder = showReplyOrder + 1
+		WHERE showReplyGID = #{showReplyGID} and showReplyOrder = #{showReplyOrder}
+	</update>
+	
+	<select id="getShowReply" parameterType="Integer" resultMap="ShowReplyDtoResult">
+		SELECT *
+		FROM showReply
+		WHERE showReplyID = #{showReplyID}
+	</select>
+	
+	<select id="showReplyCount" parameterType="Integer" resultType="Integer">
+		SELECT COUNT(*)
+		FROM showReply
+		WHERE showReviewID = #{showReviewID}
+	</select>
+	
+	<update id="setShowReplyOrder" parameterType="hashMap">
+		UPDATE showReply
+		SET showReplyOrder = showReplyOrder + 1
+		WHERE showReplyGID = #{showReplyGID} and showReplyOrder > #{showReplyOrder}
+	</update>
+	
+	<update id="plusShowReplyLike" parameterType="jy.project.review.dto.ShowReplyLikeDto">
+		UPDATE showReply
+		SET showReplyLike = showReplyLike + 1
+		WHERE showReplyID = #{showReplyID}
+	</update>
+	
+	<update id="minusShowReplyLike" parameterType="Integer">
+		UPDATE showReply
+		SET showReplyLike = showReplyLike - 1
+		WHERE showReplyID = #{showReplyID}
+	</update>
+	
+	<insert id="insertShowReplyLike" parameterType="jy.project.review.dto.ShowReplyLikeDto">
+		INSERT
+		INTO showReplyLike(showReplyID, userID)
+		VALUES(#{showReplyID}, #{userID})
+	</insert>
+	
+	<delete id="deleteShowReplyLike" parameterType="jy.project.review.dto.ShowReplyLikeDto">
+		DELETE
+		FROM showReplyLike
+		WHERE showReplyID=#{showReplyID} and userID=#{userID}
+	</delete>
+	
+	<select id="findShowReplyLike" resultType="Integer" parameterType="jy.project.review.dto.ShowReplyLikeDto">
+		SELECT COUNT(*)
+		FROM showReplyLike
+		WHERE showReplyID=#{showReplyID} and userID=#{userID}
+	</select> 
+	
+	<update id="updateSecretComment" parameterType="jy.project.review.dto.ShowReplyDto">
+		UPDATE showReply
+		SET showSecretReply = #{showSecretReply}
+		WHERE showReplyID = #{showReplyID}
+	</update>
+	
+	<select id="findShowReplyUser" parameterType="Integer" resultType="String">
+		SELECT userID
+		FROM showReply
+		WHERE showReplyID = #{showReplyID}
+	</select>
+	
+	<select id="findLastShowReplyID" resultType="Integer">
+		SELECT showReplyID
+		FROM showReply
+		ORDER BY showReplyID DESC LIMIT 1;
+	</select>
+	
+	<select id="countSameGID" resultType="Integer" parameterType="Integer">
+		SELECT COUNT(*)
+		FROM showReply
+		WHERE showReplyGID = #{showReplyID}
+	</select>
+</mapper>

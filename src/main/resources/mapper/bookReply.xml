@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.BookReplyMapper">
+
+	<resultMap type="jy.project.review.dto.BookReplyDto" id="BookReplyDtoResult">
+		<result column="bookReplyID" property="bookReplyID"/>
+		<result column="bookReviewID" property="bookReviewID"/>
+		<result column="bookReplyContens" property="bookReplyContents"/>
+		<result column="userID" property="userID"/>
+		<result column="bookReplyDate" jdbcType="TIMESTAMP" property="bookReplyDate"/>
+		<result column="bookSecretReply" property="bookSecretReply"/>
+ 		<result column="bookReplyGID" property="bookReplyGID"/>
+		<result column="bookReplyOrder" property="bookReplyOrder"/>
+		<result column="bookReplyParents" property="bookReplyParents"/>
+		<result column="bookReplyLike" property="bookReplyLike"/>
+		<result column="bookReviewWriter" property="bookReviewWriter"/>
+		<result column="bookParentsWriter" property="bookParentsWriter"/>
+	</resultMap>
+	
+	<resultMap type="jy.project.review.dto.BookReplyLikeDto" id="BookReplyLikeDto">
+		<result column="bookReplyID" property="bookReplyID"/>
+		<result column="userID" property="userID"/>
+	</resultMap>
+	
+	<select id="getBookReplyList" resultMap="BookReplyDtoResult" parameterType="Integer">
+		SELECT *
+		FROM bookReply
+		WHERE bookReviewID = #{bookReviewID}
+		ORDER BY IF(bookReplyParents = 0, bookReplyID, bookReplyParents) ASC
+		LIMIT #{startList}, #{contentNum}
+	</select>
+	
+	<insert id="insertBookReply" parameterType="jy.project.review.dto.BookReplyDto">
+ 		INSERT 
+		INTO bookReply(bookReviewID, bookReplyContents, userID, bookReplyDate, bookSecretReply, bookReplyGID, bookReplyOrder, bookReplyParents, bookReplyLike, bookReviewWriter, bookParentsWriter)
+		VALUES(#{bookReviewID}, #{bookReplyContents}, #{userID}, now(), #{bookSecretReply}, #{bookReplyGID}, #{bookReplyOrder}, #{bookReplyParents}, #{bookReplyLike}, #{bookReviewWriter}, #{bookParentsWriter}) 
+	</insert>
+	
+	<update id="updateBookReply" parameterType="jy.project.review.dto.BookReplyDto">
+		UPDATE bookReply SET
+		bookReplyContents = #{bookReplyContents},
+		bookSecretReply = #{bookSecretReply}
+		WHERE bookReplyID = #{bookReplyID}
+	</update>
+	
+	<delete id="deleteBookReply" parameterType="Integer">
+		DELETE FROM bookReply
+		WHERE bookReplyID = #{bookReplyID} or bookReplyGID = #{bookReplyID}
+	</delete>
+	
+	<delete id="deleteBookReply_delete" parameterType="Integer">
+		DELETE FROM bookReplyLike
+		WHERE bookReplyID = #{bookReplyID}
+	</delete>
+	
+ 	<update id="updateBookReplyComment">
+		UPDATE bookReply SET
+		bookReplyOrder = bookReplyOrder + 1
+		WHERE bookReplyGID = #{bookReplyGID} and bookReplyOrder = #{bookReplyOrder}
+	</update>
+	
+	<select id="getBookReply" parameterType="Integer" resultMap="BookReplyDtoResult">
+		SELECT *
+		FROM bookReply
+		WHERE bookReplyID = #{bookReplyID}
+	</select>
+	
+	<select id="bookReplyCount" parameterType="Integer" resultType="Integer">
+		SELECT COUNT(*)
+		FROM bookReply
+		WHERE bookReviewID = #{bookReviewID}
+	</select>
+	
+	<update id="setBookReplyOrder" parameterType="hashMap">
+		UPDATE bookReply
+		SET bookReplyOrder = bookReplyOrder + 1
+		WHERE bookReplyGID = #{bookReplyGID} and bookReplyOrder > #{bookReplyOrder}
+	</update>
+	
+	<update id="plusBookReplyLike" parameterType="jy.project.review.dto.BookReplyLikeDto">
+		UPDATE bookReply
+		SET bookReplyLike = bookReplyLike + 1
+		WHERE bookReplyID = #{bookReplyID}
+	</update>
+	
+	<update id="minusBookReplyLike" parameterType="Integer">
+		UPDATE bookReply
+		SET bookReplyLike = bookReplyLike - 1
+		WHERE bookReplyID = #{bookReplyID}
+	</update>
+	
+	<insert id="insertBookReplyLike" parameterType="jy.project.review.dto.BookReplyLikeDto">
+		INSERT
+		INTO bookReplyLike(bookReplyID, userID)
+		VALUES(#{bookReplyID}, #{userID})
+	</insert>
+	
+	<delete id="deleteBookReplyLike" parameterType="jy.project.review.dto.BookReplyLikeDto">
+		DELETE
+		FROM bookReplyLike
+		WHERE bookReplyID=#{bookReplyID} and userID=#{userID}
+	</delete>
+	
+	<select id="findBookReplyLike" resultType="Integer" parameterType="jy.project.review.dto.BookReplyLikeDto">
+		SELECT COUNT(*)
+		FROM bookReplyLike
+		WHERE bookReplyID=#{bookReplyID} and userID=#{userID}
+	</select> 
+	
+	<update id="updateSecretComment" parameterType="jy.project.review.dto.BookReplyDto">
+		UPDATE bookReply
+		SET bookSecretReply = #{bookSecretReply}
+		WHERE bookReplyID = #{bookReplyID}
+	</update>
+	
+	<select id="findBookReplyUser" parameterType="Integer" resultType="String">
+		SELECT userID
+		FROM bookReply
+		WHERE bookReplyID = #{bookReplyID}
+	</select>
+	
+	<select id="findLastBookReplyID" resultType="Integer">
+		SELECT bookReplyID
+		FROM bookReply
+		ORDER BY bookReplyID DESC LIMIT 1;
+	</select>
+	
+	<select id="countSameGID" resultType="Integer" parameterType="Integer">
+		SELECT COUNT(*)
+		FROM bookReply
+		WHERE bookReplyGID = #{bookReplyID}
+	</select>
+</mapper>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="jy.project.review.mapper.UserMapper">
+
+	<resultMap type="jy.project.review.dto.UserDto" id="UserDtoResult">
+		<result column="userID" property="userID"/>
+		<result column="pwd" property="pwd"/>
+		<result column="email" property="email"/>
+	</resultMap>
+	
+	<!-- 회원 정보 가져오기  -->
+	<select id="getUser" parameterType="jy.project.review.dto.UserDto" resultMap="UserDtoResult">
+		SELECT *
+		FROM user
+		WHERE userID = #{userID} AND pwd = #{pwd}
+		LIMIT 1;
+	</select>
+	
+	<!-- 회원 가입  -->
+	<insert id="insertUser" parameterType="jy.project.review.dto.UserDto">
+		INSERT
+		INTO user (userID, pwd, email)
+		VALUES (#{userID}, #{pwd}, #{email})
+	</insert>
+	
+	<!-- 아이디 중복 확인 -->
+	<select id="findUser" parameterType="jy.project.review.dto.UserDto" resultType="Integer">
+		SELECT COUNT(*)
+		FROM user
+		WHERE userID = #{userID}
+	</select>
+	
+	<!-- 회원 정보 수정  -->
+	<update id="updateUser" parameterType="jy.project.review.dto.UserDto">
+		UPDATE user SET
+		email = #{email},
+		pwd = #{pwd}
+		WHERE userID = #{userID}
+	</update>
+	
+	<!-- 회원 탈퇴  -->
+	<delete id="deleteUser">
+		DELETE FROM user
+		WHERE userID = #{userID}
+	</delete>
+</mapper>

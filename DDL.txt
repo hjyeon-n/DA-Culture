@@ -1,0 +1,211 @@
+CREATE TABLE movieBoard (
+	movieReviewID INT AUTO_INCREMENT,
+	userID VARCHAR(20) NOT NULL,
+	movieReviewTitle VARCHAR(50) NOT NULL,
+	movieReviewContents VARCHAR(5000) NOT NULL,
+	moveImage VARCHAR(100),
+	movieTitle VARCHAR(50),
+	movieScore DOUBLE(5, 1),
+	favoriteWord VARCHAR(200),
+	movieBoardDate DATETIME NOT NULL,
+	movieReviewPreview VARCHAR(50),
+	movieReviewLike INT DEFAULT 0,
+	movieSecretReview BOOLEAN DEFAULT 0,
+	movieReplyCnt INT DEFAULT 0,
+	movieReviewViews INT DEFAULT 0,
+	CONSTRAINT movieBoard_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT movieBoard_pk PRIMARY KEY(movieReviewID)
+);
+
+CREATE TABLE movieReply (
+	movieReplyID INT AUTO_INCREMENT,
+	movieReviewID INT NOT NULL,
+	movieReplyContents TEXT NOT NULL,
+	userID VARCHAR(20) NOT NULL,
+	movieReplyDate TIMESTAMP NOT NULL,
+	movieSecretReply BOOLEAN DEFAULT 0,
+	movieReplyGID INT DEFAULT 0,
+	movieReplyOrder INT DEFAULT 0,
+	movieReplyParents INT DEFAULT 0,
+	movieReplyLike INT DEFAULT 0,
+	movieReviewWriter VARCHAR(20),
+	movieParentsWriter VARCHAR(20),
+	CONSTRAINT movieReply_fk_user FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT movieReply_fk_board FOREIGN KEY (movieReviewID) REFERENCES movieBoard (movieReviewID),
+	CONSTRAINT movieReply_pk PRIMARY KEY(movieReplyID)
+);
+
+CREATE TABLE movieReviewLike (
+	movieReviewID INT,
+	userID VARCHAR(20),
+	CONSTRAINT movie_review_fk FOREIGN KEY (movieReviewID) REFERENCES movieBoard (movieReviewID),
+	CONSTRAINT movie_reviewUser_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT movie_reviewLike_pk PRIMARY KEY (movieReviewID, userID)
+);
+
+CREATE TABLE movieReplyLike (
+	movieReplyID INT,
+	userID VARCHAR(20),
+	CONSTRAINT movie_reply_fk FOREIGN KEY (movieReplyID) REFERENCES movieReply (movieReplyID),
+	CONSTRAINT movie_user_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT movie_like_pk PRIMARY KEY (movieReplyID, userID)
+);
+
+CREATE TABLE bookBoard (
+	bookReviewID INT AUTO_INCREMENT,
+	userID VARCHAR(20) NOT NULL,
+	bookReviewTitle VARCHAR(50) NOT NULL,
+	bookReviewContents VARCHAR(5000) NOT NULL,
+	bookImage VARCHAR(100),
+	bookTitle VARCHAR(50),
+	bookScore DOUBLE(5, 1),
+	favoriteWord VARCHAR(200),
+	bookBoardDate DATETIME NOT NULL,
+	bookReviewPreview VARCHAR(50),
+	bookReviewLike INT DEFAULT 0,
+	bookSecretReview BOOLEAN DEFAULT 0,
+	bookReplyCnt INT DEFAULT 0,
+	bookReviewViews INT DEFAULT 0,
+	CONSTRAINT book_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT book_pk PRIMARY KEY(bookReviewID)
+);
+
+CREATE TABLE bookReply (
+	bookReplyID INT AUTO_INCREMENT,
+	bookReviewID INT NOT NULL,
+	bookReplyContents TEXT NOT NULL,
+	userID VARCHAR(20) NOT NULL,
+	bookReplyDate TIMESTAMP NOT NULL,
+	bookSecretReply BOOLEAN DEFAULT 0,
+	bookReplyGID INT DEFAULT 0,
+	bookReplyOrder INT DEFAULT 0,
+	bookReplyParents INT DEFAULT 0,
+	bookReplyLike INT DEFAULT 0,
+	bookReviewWriter VARCHAR(20),
+	bookParentsWriter VARCHAR(20),
+	CONSTRAINT bookReply_fk_user FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT bookReply_fk_board FOREIGN KEY (bookReviewID) REFERENCES bookBoard (bookReviewID),
+	CONSTRAINT bookReply_pk PRIMARY KEY(bookReplyID)
+);
+
+CREATE TABLE bookReviewLike (
+	bookReviewID INT,
+	userID VARCHAR(20),
+	CONSTRAINT book_review_fk FOREIGN KEY (bookReviewID) REFERENCES bookBoard (bookReviewID),
+	CONSTRAINT book_reviewUser_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT book_reviewLike_pk PRIMARY KEY (bookReviewID, userID)
+);
+
+CREATE TABLE bookReplyLike (
+	bookReplyID INT,
+	userID VARCHAR(20),
+	CONSTRAINT book_reply_fk FOREIGN KEY (bookReplyID) REFERENCES bookReply (bookReplyID),
+	CONSTRAINT book_user_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT book_like_pk PRIMARY KEY (bookReplyID, userID)
+);
+
+CREATE TABLE showBoard (
+	showReviewID INT AUTO_INCREMENT,
+	userID VARCHAR(20) NOT NULL,
+	showReviewTitle VARCHAR(50) NOT NULL,
+	showReviewContents VARCHAR(5000) NOT NULL,
+	showImage VARCHAR(100),
+	showTitle VARCHAR(50),
+	showScore DOUBLE(5, 1),
+	favoriteWord VARCHAR(200),
+	showBoardDate DATETIME NOT NULL,
+	showReviewPreview VARCHAR(50),
+	showReviewLike INT DEFAULT 0,
+	showSecretReview BOOLEAN DEFAULT 0,
+	showReplyCnt INT DEFAULT 0,
+	showReviewViews INT DEFAULT 0,
+	CONSTRAINT show_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT show_pk PRIMARY KEY(showReviewID)
+);
+
+CREATE TABLE showReply (
+	showReplyID INT AUTO_INCREMENT,
+	showReviewID INT NOT NULL,
+	showReplyContents TEXT NOT NULL,
+	userID VARCHAR(20) NOT NULL,
+	showReplyDate TIMESTAMP NOT NULL,
+	showSecretReply BOOLEAN DEFAULT 0,
+	showReplyGID INT DEFAULT 0,
+	showReplyOrder INT DEFAULT 0,
+	showReplyParents INT DEFAULT 0,
+	showReplyLike INT DEFAULT 0,
+	showReviewWriter VARCHAR(20),
+	showParentsWriter VARCHAR(20),
+	CONSTRAINT showReply_fk_user FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT showReply_fk_board FOREIGN KEY (showReviewID) REFERENCES showBoard (showReviewID),
+	CONSTRAINT showReply_pk PRIMARY KEY(showReplyID)
+);
+
+CREATE TABLE showReviewLike (
+	showReviewID INT,
+	userID VARCHAR(20),
+	CONSTRAINT show_review_fk FOREIGN KEY (showReviewID) REFERENCES showBoard (showReviewID),
+	CONSTRAINT show_reviewUser_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT show_reviewLike_pk PRIMARY KEY (showReviewID, userID)
+);
+
+CREATE TABLE showReplyLike (
+	showReplyID INT,
+	userID VARCHAR(20),
+	CONSTRAINT show_reply_fk FOREIGN KEY (showReplyID) REFERENCES showReply (showReplyID),
+	CONSTRAINT show_user_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT show_like_pk PRIMARY KEY (showReplyID, userID)
+);
+
+CREATE TABLE playBoard (
+	playReviewID INT AUTO_INCREMENT,
+	userID VARCHAR(20) NOT NULL,
+	playReviewTitle VARCHAR(50) NOT NULL,
+	playReviewContents VARCHAR(5000) NOT NULL,
+	playImage VARCHAR(100),
+	playTitle VARCHAR(50),
+	playScore DOUBLE(5, 1),
+	favoriteWord VARCHAR(200),
+	playBoardDate DATETIME NOT NULL,
+	playReviewPreview VARCHAR(50),
+	playReviewLike INT DEFAULT 0,
+	playSecretReview BOOLEAN DEFAULT 0,
+	playReplyCnt INT DEFAULT 0,
+	playReviewViews INT DEFAULT 0,
+	CONSTRAINT play_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT play_pk PRIMARY KEY(playReviewID)
+);
+
+CREATE TABLE playReply (
+	playReplyID INT AUTO_INCREMENT,
+	playReviewID INT NOT NULL,
+	playReplyContents TEXT NOT NULL,
+	userID VARCHAR(20) NOT NULL,
+	playReplyDate TIMESTAMP NOT NULL,
+	playSecretReply BOOLEAN DEFAULT 0,
+	playReplyGID INT DEFAULT 0,
+	playReplyOrder INT DEFAULT 0,
+	playReplyParents INT DEFAULT 0,
+	playReplyLike INT DEFAULT 0,
+	playReviewWriter VARCHAR(20) NOT NULL,
+	playParentsWriter VARCHAR(20),
+	CONSTRAINT playReply_fk_user FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT playReply_fk_board FOREIGN KEY (playReviewID) REFERENCES playBoard (playReviewID),
+	CONSTRAINT playReply_pk PRIMARY KEY(playReplyID)
+);
+
+CREATE TABLE playReviewLike (
+	playReviewID INT,
+	userID VARCHAR(20),
+	CONSTRAINT play_review_fk FOREIGN KEY (playReviewID) REFERENCES playBoard (playReviewID),
+	CONSTRAINT play_reviewUser_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT play_reviewLike_pk PRIMARY KEY (playReviewID, userID)
+);
+
+CREATE TABLE playReplyLike (
+	playReplyID INT,
+	userID VARCHAR(20),
+	CONSTRAINT play_reply_fk FOREIGN KEY (playReplyID) REFERENCES playReply (playReplyID),
+	CONSTRAINT play_user_fk FOREIGN KEY (userID) REFERENCES user (userID),
+	CONSTRAINT play_like_pk PRIMARY KEY (playReplyID, userID)
+);
