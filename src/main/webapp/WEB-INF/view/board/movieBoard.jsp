@@ -72,6 +72,7 @@
 						<tr>
 							<td>${movieReviewList.movieReviewID}</td>
 							<td>
+							<!-- 글자 길이를 제한  -->
 							<c:choose>
 								<c:when test="${fn:length(movieReviewList.movieTitle) > 10}">
 	    							${fn:substring(movieReviewList.movieTitle, 0, 10)}...

@@ -50,6 +50,7 @@
 			$("#movieTitle").focus();
 			return false;
 		}
+		/* 공백 확인을 위해서 */
 		var favoriteWord = $("#favoriteWord").val().replace(/[<][^>]*[>]/gi, "");
 		var text = $("#movieReviewContents").val().replace(/[<][^>]*[>]/gi, "");
 		if(text ==""){

@@ -92,6 +92,7 @@ public class MovieReviewAppController {
 	public List<MovieParser> movieAPI(ModelAndView mv, HttpServletRequest request,
 			@RequestParam(required = false) String keyword, RedirectAttributes rttr) {
 		
+		System.out.println(keyword);
 		String clientId = Constants.API_CLIENTID;
         String clientSecret = Constants.API_CLIENTPW;
         StringBuffer response = new StringBuffer();
