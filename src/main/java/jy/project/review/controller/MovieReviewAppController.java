@@ -73,7 +73,7 @@ public class MovieReviewAppController {
 		mv.addObject("user", userDto);
 		mv.addObject("movieReviewList", movieReviewList);
 		mv.addObject("reviewSearch", reviewSearch);
-		mv.setViewName("board/movieBoard");
+		mv.setViewName("thymeleaf/test");
 		return mv;
 	}
 
